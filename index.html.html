@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>The Space Between Us</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0e10;--surface:#16161a;--surface2:#1e1e24;--border:#2a2a35;--text:#e8e6e0;--text-muted:#6e6e80;--text-soft:#a8a8b8;--neil:#7eb8c9;--maeve:#c99b7e;--accent:#9b8fc4;--danger:#c97e7e;--success:#7ec9a0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;font-size:15px;line-height:1.6}
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+#landing{align-items:center;justify-content:center;padding:40px 24px;text-align:center;position:relative;overflow:hidden}
+#landing::before{content:'';position:absolute;width:400px;height:400px;background:radial-gradient(circle,rgba(155,143,196,0.08) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.title-block{margin-bottom:48px;animation:fadeUp 0.8s ease forwards}
+.title-small{font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:0.25em;color:var(--text-muted);text-transform:uppercase;margin-bottom:16px}
+h1{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(32px,8vw,48px);line-height:1.15;color:var(--text);font-style:italic}
+.subtitle{margin-top:16px;color:var(--text-muted);font-size:14px;max-width:280px;margin-left:auto;margin-right:auto}
+.who-block{width:100%;max-width:340px;animation:fadeUp 0.8s 0.2s ease both}
+.who-label{font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-muted);margin-bottom:16px}
+.who-buttons{display:flex;gap:12px;justify-content:center;margin-bottom:20px}
+.who-btn{flex:1;padding:16px 12px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;cursor:pointer;transition:all 0.2s}
+.who-btn:hover{background:var(--surface2)}
+.who-btn.neil{border-color:var(--neil);color:var(--neil)}
+.who-btn.maeve{border-color:var(--maeve);color:var(--maeve)}
+.shared-btn{width:100%;padding:14px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text-soft);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.2s;letter-spacing:0.05em}
+.shared-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(155,143,196,0.05)}
+.back-btn{background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;padding:0;margin-bottom:32px;display:flex;align-items:center;gap:6px;align-self:flex-start}
+.back-btn:hover{color:var(--text)}
+.setup-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-style:italic;margin-bottom:8px;text-align:center}
+.setup-sub{color:var(--text-muted);font-size:13px;text-align:center;margin-bottom:32px;max-width:300px}
+.field-group{width:100%;max-width:400px;margin-bottom:20px}
+.field-label{font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;display:block}
+textarea,input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:300;resize:none;transition:border-color 0.2s;outline:none}
+textarea:focus,input:focus{border-color:var(--accent)}
+textarea{min-height:80px}
+.primary-btn{width:100%;max-width:400px;padding:16px;border-radius:12px;border:none;background:var(--accent);color:white;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:opacity 0.2s;margin-top:8px}
+.primary-btn:hover{opacity:0.85}
+.primary-btn:disabled{opacity:0.4;cursor:not-allowed}
+.top-bar{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface)}
+.user-tag{display:flex;align-items:center;gap:8px}
+.user-dot{width:8px;height:8px;border-radius:50%}
+.user-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px}
+.mode-badge{font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-muted);background:var(--surface2);padding:4px 10px;border-radius:20px}
+.messages-area{flex:1;overflow-y:auto;padding:24px 20px;display:flex;flex-direction:column;gap:16px}
+.message{animation:fadeUp 0.3s ease forwards}
+.msg-label{font-size:10px;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:6px}
+.msg-bubble{padding:14px 16px;border-radius:14px;font-size:14px;line-height:1.65}
+.message.user .msg-label{color:var(--neil);text-align:right}
+.message.user.maeve-user .msg-label{color:var(--maeve)}
+.message.user .msg-bubble{background:rgba(126,184,201,0.15);border:1px solid rgba(126,184,201,0.35);border-bottom-right-radius:4px;margin-left:20px;color:#e8f4f8}
+.message.user.maeve-user .msg-bubble{background:rgba(201,155,126,0.15);border:1px solid rgba(201,155,126,0.35);color:#f8f0ea}
+.message.ai .msg-label{color:var(--text-muted)}
+.message.ai .msg-bubble{background:#1e1e2e;border:1px solid #32324a;border-bottom-left-radius:4px;margin-right:20px;color:#c8c8d8}
+.message.ai .msg-bubble p{margin-bottom:10px}
+.message.ai .msg-bubble p:last-child{margin-bottom:0}
+.message.ai .msg-bubble strong{color:var(--text);font-weight:500}
+.typing-indicator{display:flex;gap:4px;align-items:center;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;border-bottom-left-radius:4px;width:fit-content}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);animation:typingBounce 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:0.2s}
+.typing-dot:nth-child(3){animation-delay:0.4s}
+.input-area{padding:16px 20px 24px;background:var(--surface);border-top:1px solid var(--border)}
+.input-row{display:flex;gap:10px;align-items:flex-end}
+.input-row textarea{flex:1;min-height:48px;max-height:120px;padding:12px 14px;border-radius:12px;font-size:14px}
+.send-btn{width:48px;height:48px;border-radius:12px;border:none;background:var(--accent);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity 0.2s;flex-shrink:0}
+.send-btn:hover{opacity:0.85}
+.send-btn:disabled{opacity:0.4;cursor:not-allowed}
+.input-hint{font-size:11px;color:var(--text-muted);margin-top:8px;text-align:center}
+.shared-top{padding:20px 24px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between}
+.shared-users{display:flex;align-items:center;gap:10px}
+.shared-user-tag{display:flex;align-items:center;gap:5px;font-size:13px}
+.connector{color:var(--text-muted);font-size:11px}
+.tab-row{display:flex;border-bottom:1px solid var(--border);background:var(--surface)}
+.tab{flex:1;padding:12px;text-align:center;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;background:none;border-left:none;border-right:none;border-top:none}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{display:none;flex:1;flex-direction:column}
+.tab-content.active{display:flex}
+.welcome-msg{margin:24px 20px 0;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;font-size:13px;color:var(--text-soft);line-height:1.6;text-align:center}
+.welcome-msg em{font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:var(--text);display:block;margin-bottom:6px}
+.maeve-note{background:rgba(201,155,126,0.08);border:1px solid rgba(201,155,126,0.2);border-radius:10px;padding:14px;font-size:13px;color:var(--text-soft);max-width:400px;text-align:center;line-height:1.6;margin-bottom:24px}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes typingBounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+</style>
+</head>
+<body>
+
+<div id="landing" class="screen active">
+  <div class="title-block">
+    <div class="title-small">A communication tool</div>
+    <h1>The Space<br>Between Us</h1>
+    <p class="subtitle">A quiet place to find clarity before you speak</p>
+  </div>
+  <div class="who-block">
+    <div class="who-label">Who are you?</div>
+    <div class="who-buttons">
+      <button class="who-btn neil" id="btn-neil">Neil</button>
+      <button class="who-btn maeve" id="btn-maeve">Maeve</button>
+    </div>
+    <button class="shared-btn" id="btn-shared">&#8596; Shared Space &mdash; Between Us</button>
+  </div>
+</div>
+
+<div id="pin-screen" class="screen">
+  <div style="padding:40px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;">
+    <button class="back-btn" id="pin-back" style="align-self:flex-start;">&#8592; Back</button>
+    <div id="pin-user-indicator" style="font-family:'Cormorant Garamond',serif;font-size:28px;font-style:italic;margin-bottom:8px;"></div>
+    <p id="pin-instruction" style="color:var(--text-muted);font-size:14px;max-width:300px;margin-bottom:32px;line-height:1.7;"></p>
+    <div style="width:100%;max-width:300px;margin-bottom:20px;text-align:left;">
+      <label class="field-label" id="pin-label">Enter your PIN</label>
+      <input type="password" id="pin-input" placeholder="Enter PIN..." maxlength="10" style="font-size:20px;letter-spacing:0.3em;text-align:center;" />
+    </div>
+    <button class="primary-btn" id="btn-confirm-pin" style="max-width:300px;">Continue</button>
+    <p id="pin-error" style="color:var(--danger);font-size:13px;margin-top:12px;display:none;"></p>
+  </div>
+</div>
+
+<div id="api-setup" class="screen">
+  <div style="padding:40px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;">
+    <div class="title-small" style="margin-bottom:16px">One time setup</div>
+    <h1 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:28px;margin-bottom:12px;font-style:italic">Almost there</h1>
+    <p style="color:var(--text-muted);font-size:14px;max-width:300px;margin-bottom:32px;line-height:1.7">Enter your Anthropic API key once. Saved only on your device.</p>
+    <div style="width:100%;max-width:360px;margin-bottom:20px;text-align:left;">
+      <label class="field-label">Your Anthropic API Key</label>
+      <input type="password" id="api-key-input" placeholder="sk-ant-..." style="font-family:monospace;font-size:13px;" />
+      <p style="font-size:11px;color:var(--text-muted);margin-top:8px;">Get your key at console.anthropic.com then API Keys</p>
+    </div>
+    <button class="primary-btn" id="btn-save-api" style="max-width:360px;">Save and Continue</button>
+    <p id="api-error" style="color:var(--danger);font-size:13px;margin-top:12px;display:none;">Key should start with sk-ant-</p>
+  </div>
+</div>
+
+<div id="solo-main" class="screen">
+  <div class="top-bar">
+    <div class="user-tag">
+      <div class="user-dot" id="solo-dot"></div>
+      <div class="user-name" id="solo-name"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span class="mode-badge">Solo</span>
+      <button class="back-btn" id="solo-back" style="margin:0">&#8592; Home</button>
+    </div>
+  </div>
+  <div class="messages-area" id="messages-area"></div>
+  <div class="input-area">
+    <div class="input-row">
+      <textarea id="user-input" placeholder="What is happening right now..." rows="1"></textarea>
+      <button class="send-btn" id="send-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+    </div>
+    <div class="input-hint">Take your time. There is no rush.</div>
+  </div>
+</div>
+
+<div id="maeve-setup" class="screen">
+  <div style="padding:40px 24px;display:flex;flex-direction:column;align-items:center;">
+    <button class="back-btn" id="maeve-setup-back">&#8592; Back</button>
+    <div class="setup-title" style="color:var(--maeve)">Welcome, Maeve</div>
+    <p class="setup-sub">This is your space. Neil cannot see this.</p>
+    <div class="maeve-note">Your profile is completely separate and built by you alone.</div>
+    <div class="field-group">
+      <label class="field-label">What should this tool know about your history or background?</label>
+      <textarea id="maeve-history" placeholder="Anything relevant to how you experience conflict or closeness..." rows="4"></textarea>
+    </div>
+    <div class="field-group">
+      <label class="field-label">What are your main triggers in conflict?</label>
+      <textarea id="maeve-triggers" placeholder="What tends to activate you..." rows="3"></textarea>
+    </div>
+    <div class="field-group">
+      <label class="field-label">What do you need most during difficult moments?</label>
+      <textarea id="maeve-needs" placeholder="What would actually help..." rows="3"></textarea>
+    </div>
+    <button class="primary-btn" id="btn-save-maeve" style="border-color:var(--maeve);background:var(--maeve);">Save My Profile</button>
+  </div>
+</div>
+
+<div id="shared-main" class="screen">
+  <div class="shared-top">
+    <div class="shared-users">
+      <div class="shared-user-tag"><div class="user-dot" style="background:var(--neil)"></div><span style="color:var(--neil)">Neil</span></div>
+      <div class="connector">&#8596;</div>
+      <div class="shared-user-tag"><div class="user-dot" style="background:var(--maeve)"></div><span style="color:var(--maeve)">Maeve</span></div>
+    </div>
+    <button class="back-btn" id="shared-back" style="margin:0">&#8592; Home</button>
+  </div>
+  <div class="tab-row">
+    <button class="tab active" id="tab-neil">Neil</button>
+    <button class="tab" id="tab-maeve">Maeve</button>
+    <button class="tab" id="tab-together">Together</button>
+  </div>
+  <div id="neil-tab" class="tab-content active" style="flex-direction:column;">
+    <div class="messages-area" id="neil-shared-messages">
+      <div class="welcome-msg"><em>Neil&#39;s private space</em>Share what you are feeling. Your raw words stay here.</div>
+    </div>
+    <div class="input-area">
+      <div class="input-row">
+        <textarea id="neil-shared-input" placeholder="What are you experiencing right now..." rows="1"></textarea>
+        <button class="send-btn" id="btn-send-neil" style="background:var(--neil);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="maeve-tab" class="tab-content" style="flex-direction:column;">
+    <div class="messages-area" id="maeve-shared-messages">
+      <div class="welcome-msg" style="border-color:rgba(201,155,126,0.2);background:rgba(201,155,126,0.05)"><em style="color:var(--maeve)">Maeve&#39;s private space</em>Share what you are feeling. Your raw words stay here.</div>
+    </div>
+    <div class="input-area">
+      <div class="input-row">
+        <textarea id="maeve-shared-input" placeholder="What are you experiencing right now..." rows="1"></textarea>
+        <button class="send-btn" id="btn-send-maeve" style="background:var(--maeve);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div id="reflection-tab" class="tab-content" style="flex-direction:column;">
+    <div class="messages-area" id="together-messages">
+      <div class="welcome-msg"><em>The shared reflection</em>When both of you have shared, a reflection will appear here.</div>
+    </div>
+    <div class="input-area">
+      <div class="input-row">
+        <textarea id="together-input" placeholder="Ask the space something together..." rows="1"></textarea>
+        <button class="send-btn" id="btn-send-together" style="background:var(--accent);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// THE SPACE BETWEEN US - Complete Application
+// ============================================================
+
+var SUPABASE_URL = 'https://nhomtoutfvycvecbecne.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ob210b3V0ZnZ5Y3ZlY2JlY25lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MTM2NDIsImV4cCI6MjA5NTk4OTY0Mn0.QZp9lzXL8j6ifz0Dev_8LCe4pMCtN3W2BKONbgvfOXU';
+var API_MODEL = 'claude-sonnet-4-20250514';
+
+// ── STATE ────────────────────────────────────────────────────
+var state = {
+  currentUser: null,
+  apiKey: null,
+  pendingUser: null,
+  pinAttempts: 0,
+  soloHistory: [],
+  neilSharedHistory: [],
+  maeveSharedHistory: [],
+  togetherHistory: [],
+  maeveProfile: null,
+  neilSummary: '',
+  maeveSummary: '',
+  togetherSummary: ''
+};
+
+var KEYS = {
+  apiKey:          'tsbu_api_key',
+  soloNeil:        'tsbu_neil_solo',
+  soloMaeve:       'tsbu_maeve_solo',
+  shared:          'tsbu_shared',
+  maeveProfile:    'tsbu_maeve_profile',
+  summaryNeil:     'tsbu_summary_neil',
+  summaryMaeve:    'tsbu_summary_maeve',
+  summaryTogether: 'tsbu_summary_together'
+};
+
+// ── NEIL PROFILE ─────────────────────────────────────────────
+var neilProfile = {
+  name: "Neil",
+  history: [
+    "Neil came from a separated family. His father was distant and died 25 years ago.",
+    "His mother was emotionally cold due to the pressures of raising four children alone with no income.",
+    "Neil experienced a period with an abusive stepfather — both physically and mentally.",
+    "He grew up as the only male among three sisters.",
+    "These experiences shaped a pattern of managing alone, withdrawing when overwhelmed, and questioning his own perception when challenged.",
+    "Neil learned early that expressing needs was either unsafe or pointless — vulnerability led to harm or was ignored.",
+    "Neil acknowledges early cheating and lying in the relationship with Maeve, accepts full responsibility, and is working to repair trust.",
+    "He carries a parallel story that has rarely had space — his own history and its effect on how he shows up.",
+    "Neil has a deep nuanced understanding of Maeve and the relationship. He is thoughtful, self-aware, and capable of holding complexity.",
+    "NEIL'S UNDERSTANDING OF THE DYNAMIC (his perspective only — not objective fact about Maeve):",
+    "From Neil's experience, Maeve appears to have significant self-awareness but struggles to hold space for it without shame.",
+    "Neil experiences two versions of Maeve: a reflective Maeve who is warm and capable of real insight, and an activated Maeve who operates from pure defence.",
+    "Neil understands these are not character flaws but nervous system states. The reflective Maeve has been more present recently.",
+    "Neil experiences Maeve as feeling judged easily, where feedback can land as attack. This is Neil's lived experience, not a definition of who Maeve is."
+  ].join(" "),
+  triggers: [
+    "Attacks on his character.",
+    "Contempt.",
+    "Feeling redefined or misrepresented as a person.",
+    "Conflict that escalates from the present issue into historical patterns or identity-level conclusions.",
+    "Feeling unheard or emotionally flooded.",
+    "The sense of being a permanent outsider in Maeve's life — particularly around the apartment, Keith's presence, and not being allowed to fill a natural role with Ava."
+  ].join(" "),
+  needs: [
+    "Respect during conflict.",
+    "Clarity focused on the present issue rather than historical injury.",
+    "Space to gather himself without it being interpreted as abandonment.",
+    "To feel that his perspective is heard even when he has caused harm in the past.",
+    "To feel like a full partner in Maeve's life, not a visitor.",
+    "To be allowed to give more to both Maeve and Ava without that being threatening."
+  ].join(" "),
+  patterns: [
+    "When flooded, Neil tends to seek space and withdraw.",
+    "This withdrawal triggers abandonment fears in Maeve, which escalates conflict further.",
+    "Neil can lose grip on his own perception during severe escalation — rooted in childhood experience of having his reality questioned by an abusive stepfather.",
+    "Neil carries the weight of past behaviour as a permanent identity, reinforced when historical injury explains present conflict.",
+    "He has tried repeatedly to have deeper conversations about the future but these get shut down through defensiveness.",
+    "Neil has a genuine desire to be more present and give more to both Maeve and Ava. This comes from love, not criticism."
+  ].join(" ")
+};
+
+// ── RELATIONSHIP CONTEXT ─────────────────────────────────────
+var relationshipContext = [
+  "Neil and Maeve are long-term partners of over 8 years. They do not live together.",
+  "Maeve lives in an apartment co-owned with her ex-husband Keith, where she raises their daughter Ava (aged 11).",
+  "Keith spends regular time in the apartment with Ava and Maeve facilitates this.",
+  "His presence is woven into the home through shared ownership, physical presence, photos, belongings, and an Alexa device.",
+  "This contributes to Neil feeling like a guest in someone else's space rather than a full partner.",
+  "KEITH AND AVA: Keith is Ava's father but an unreliable co-parent — frequently late, sometimes not showing up, occasionally arriving hungover.",
+  "He does not cook and leaves the apartment messy.",
+  "Despite this, Ava loves her father and at times expresses that she wishes her dad was doing the things Neil does with them.",
+  "Maeve carries significant guilt about breaking the family dynamic for Ava.",
+  "This guilt leads to overcompensation — keeping Keith's presence prominent even when his behaviour does not warrant it.",
+  "Neil understands this comes from Maeve's desire to protect Ava, not from prioritising Keith. But the cost to the relationship is real.",
+  "Neil wants to give more to both Maeve and Ava. He sees a void that Keith's unreliability creates and wants to fill it — not to replace Keith but because he loves them.",
+  "He feels this door is kept closed due to Maeve's guilt and protectiveness.",
+  "Ava is 11 and can see her father's limitations clearly herself.",
+  "CONFLICT PATTERN: A small trigger leads to Maeve becoming activated.",
+  "The present issue expands into historical narrative. Neil tries to explain. Neil feels misunderstood.",
+  "Neil becomes overwhelmed and seeks space. Maeve experiences abandonment. Escalation increases. Temporary repair. Pattern repeats.",
+  "A critical incident occurred where Maeve threatened suicide during an escalation, said Neil would be responsible, and said messages had been prepared blaming him.",
+  "This caused significant fear and shock for Neil.",
+  "CURRENT POSITION: The relationship recently went through a near-breakup.",
+  "Both have recognised the need for deep structural change.",
+  "Maeve demonstrated genuinely new behaviour by interrupting her own spiral during a recent potential conflict and returning to Neil differently.",
+  "Both partners have agreed they would walk away if the pattern returns unchanged.",
+  "The reflective Maeve is more present than she has been in a long time.",
+  "Current status: cautious hope, mutual commitment to change, early stage of rebuilding trust.",
+  "The future — shared living, Neil's fuller role with Ava, the Keith and apartment situation — remains unspoken but needs addressing when stability allows."
+].join(" ");
+
+// ── STORAGE ──────────────────────────────────────────────────
+async function dbGet(key) {
+  try {
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/conversations?id=eq.' + encodeURIComponent(key) + '&select=data',
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }
+    );
+    var rows = await res.json();
+    if (rows && rows.length > 0) {
+      try { localStorage.setItem(key, JSON.stringify(rows[0].data)); } catch(e) {}
+      return rows[0].data;
+    }
+    return null;
+  } catch(e) {
+    try {
+      var local = localStorage.getItem(key);
+      return local ? JSON.parse(local) : null;
+    } catch(e2) { return null; }
+  }
+}
+
+async function dbSet(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch(e) {}
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/conversations', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({ id: key, data: value, updated_at: new Date().toISOString() })
+    });
+  } catch(e) {}
+}
+
+// ── SCREENS ───────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+
+function goHome() {
+  state.currentUser = null;
+  showScreen('landing');
+}
+
+// ── API KEY ───────────────────────────────────────────────────
+async function initApp() {
+  var stored = await dbGet(KEYS.apiKey);
+  if (stored) {
+    state.apiKey = stored;
+    showScreen('landing');
+  } else {
+    showScreen('api-setup');
+  }
+}
+
+function saveApiKey() {
+  var val = document.getElementById('api-key-input').value.trim();
+  if (!val.startsWith('sk-ant-')) {
+    document.getElementById('api-error').style.display = 'block';
+    return;
+  }
+  document.getElementById('api-error').style.display = 'none';
+  state.apiKey = val;
+  dbSet(KEYS.apiKey, val);
+  showScreen('landing');
+}
+
+// ── PIN ───────────────────────────────────────────────────────
+async function promptPin(user) {
+  state.pendingUser = user;
+  state.pinAttempts = 0;
+  var color = (user === 'neil') ? 'var(--neil)' : 'var(--maeve)';
+  var name  = (user === 'neil') ? 'Neil' : 'Maeve';
+
+  document.getElementById('pin-user-indicator').textContent = name;
+  document.getElementById('pin-user-indicator').style.color = color;
+  document.getElementById('btn-confirm-pin').style.background = color;
+  document.getElementById('pin-error').style.display = 'none';
+  document.getElementById('pin-input').value = '';
+
+  var existing = document.getElementById('pin-reset-link');
+  if (existing) existing.remove();
+
+  var stored = localStorage.getItem('tsbu_pin_' + user);
+
+  if (stored) {
+    document.getElementById('pin-label').textContent = 'Enter your PIN';
+    document.getElementById('pin-instruction').textContent = 'This is your private space. Enter your PIN to continue.';
+  } else {
+    document.getElementById('pin-label').textContent = 'Create a PIN';
+    document.getElementById('pin-instruction').textContent = 'Create a PIN of at least 4 digits. Keep it somewhere safe.';
+  }
+
+  showScreen('pin-screen');
+  setTimeout(function() {
+    var el = document.getElementById('pin-input');
+    if (el) el.focus();
+  }, 300);
+}
+
+async function confirmPin() {
+  var input = document.getElementById('pin-input').value.trim();
+  var err   = document.getElementById('pin-error');
+
+  if (input.length < 4) {
+    err.textContent = 'PIN must be at least 4 digits.';
+    err.style.display = 'block';
+    return;
+  }
+
+  var pinKey = 'tsbu_pin_' + state.pendingUser;
+
+  // Read stored PIN - try localStorage first, then Supabase backup
+  var stored = localStorage.getItem(pinKey);
+  if (stored) stored = stored.replace(/^"+|"+$/g, '');
+  var source = stored ? 'localStorage' : 'checking-supabase';
+
+  if (!stored) {
+    // Try Supabase backup
+    try {
+      var backup = await dbGet(pinKey + '_backup');
+      if (backup !== null && backup !== undefined) {
+        var rawPin = backup;
+        // Unwrap any JSON encoding layers
+        try { while (typeof rawPin === 'string' && (rawPin[0] === '"' || rawPin[0] === "'")) { rawPin = JSON.parse(rawPin); } } catch(e) {}
+        rawPin = String(rawPin).replace(/^"+|"+$/g, '').trim();
+        if (rawPin && rawPin.length >= 4) {
+          stored = rawPin;
+          source = 'supabase:' + rawPin;
+          localStorage.setItem(pinKey, stored);
+        } else {
+          source = 'supabase-empty:' + String(backup);
+        }
+      } else {
+        source = 'supabase-null';
+      }
+    } catch(e) { source = 'supabase-error:' + e.message; }
+  }
+
+  if (!stored) {
+    // No PIN exists - first time setup
+    localStorage.setItem(pinKey, input);
+    try { await dbSet(pinKey + '_backup', input); } catch(e) {}
+    err.style.display = 'none';
+    selectUser(state.pendingUser);
+  } else if (input === stored) {
+    // Correct PIN
+    state.pinAttempts = 0;
+    err.style.display = 'none';
+    selectUser(state.pendingUser);
+  } else {
+    // Wrong PIN
+    state.pinAttempts++;
+    if (state.pinAttempts >= 5) {
+      err.textContent = 'Too many incorrect attempts.';
+      err.style.display = 'block';
+      if (!document.getElementById('pin-reset-link')) {
+        var rl = document.createElement('p');
+        rl.id = 'pin-reset-link';
+        rl.style.cssText = 'font-size:12px;color:var(--text-muted);margin-top:8px;cursor:pointer;text-decoration:underline;';
+        rl.textContent = 'Forgot your PIN? Reset it (history will be kept)';
+        rl.addEventListener('click', function() { resetPin(state.pendingUser); });
+        err.parentNode.insertBefore(rl, err.nextSibling);
+      }
+    } else {
+      err.textContent = 'Incorrect PIN. ' + (5 - state.pinAttempts) + ' attempts remaining.';
+      err.style.display = 'block';
+    }
+    document.getElementById('pin-input').value = '';
+  }
+}
+
+async function resetPin(user) {
+  if (!confirm('Reset your PIN? Your conversation history and memory will be kept.')) return;
+  localStorage.removeItem('tsbu_pin_' + user);
+  try { await dbSet('tsbu_pin_' + user + '_backup', null); } catch(e) {}
+  state.pinAttempts = 0;
+  promptPin(user);
+}
+
+// ── USER SELECTION ────────────────────────────────────────────
+async function selectUser(user) {
+  state.currentUser = user;
+  state.neilSummary     = (await dbGet(KEYS.summaryNeil))     || '';
+  state.maeveSummary    = (await dbGet(KEYS.summaryMaeve))    || '';
+  state.togetherSummary = (await dbGet(KEYS.summaryTogether)) || '';
+
+  if (user === 'neil') {
+    state.soloHistory = (await dbGet(KEYS.soloNeil)) || [];
+    document.getElementById('solo-dot').style.background = 'var(--neil)';
+    document.getElementById('solo-name').textContent = 'Neil';
+    showScreen('solo-main');
+    renderSoloHistory('neil');
+  } else {
+    var profile = await dbGet(KEYS.maeveProfile);
+    if (profile) {
+      state.maeveProfile = profile;
+      state.soloHistory = (await dbGet(KEYS.soloMaeve)) || [];
+      document.getElementById('solo-dot').style.background = 'var(--maeve)';
+      document.getElementById('solo-name').textContent = 'Maeve';
+      showScreen('solo-main');
+      renderSoloHistory('maeve');
+    } else {
+      showScreen('maeve-setup');
+    }
+  }
+}
+
+async function goShared() {
+  state.neilSummary     = (await dbGet(KEYS.summaryNeil))     || '';
+  state.maeveSummary    = (await dbGet(KEYS.summaryMaeve))    || '';
+  state.togetherSummary = (await dbGet(KEYS.summaryTogether)) || '';
+  var shared = (await dbGet(KEYS.shared)) || {};
+  state.neilSharedHistory  = shared.neil    || [];
+  state.maeveSharedHistory = shared.maeve   || [];
+  state.togetherHistory    = shared.together || [];
+  showScreen('shared-main');
+}
+
+// ── MAEVE PROFILE ─────────────────────────────────────────────
+async function saveMaeveProfile() {
+  state.maeveProfile = {
+    name:     'Maeve',
+    history:  document.getElementById('maeve-history').value.trim(),
+    triggers: document.getElementById('maeve-triggers').value.trim(),
+    needs:    document.getElementById('maeve-needs').value.trim()
+  };
+  await dbSet(KEYS.maeveProfile, state.maeveProfile);
+  state.soloHistory = [];
+  state.currentUser = 'maeve';
+  document.getElementById('solo-dot').style.background = 'var(--maeve)';
+  document.getElementById('solo-name').textContent = 'Maeve';
+  showScreen('solo-main');
+  renderSoloHistory('maeve');
+}
+
+// ── RENDER ────────────────────────────────────────────────────
+function renderSoloHistory(user) {
+  var area = document.getElementById('messages-area');
+  area.innerHTML = '';
+  if (state.soloHistory.length === 0) {
+    var welcome = (user === 'neil')
+      ? 'This is your space, Neil. Write anything here. You will get honest feedback, not reassurance. What is on your mind?'
+      : 'This is your space, Maeve. Everything here is private to you. What would you like to work through?';
+    addMsg('ai', welcome, area, null);
+  } else {
+    state.soloHistory.forEach(function(m) {
+      addMsg(m.role, m.content, area, m.role === 'user' ? user : null);
+    });
+  }
+}
+
+function addMsg(role, text, area, user) {
+  var div = document.createElement('div');
+  div.className = 'message ' + role;
+  if (user === 'maeve') div.classList.add('maeve-user');
+
+  var label = document.createElement('div');
+  label.className = 'msg-label';
+  label.textContent = (role === 'user') ? (user || state.currentUser || 'You') : 'Claude';
+
+  var bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  var formatted = text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+  bubble.innerHTML = '<p>' + formatted + '</p>';
+
+  div.appendChild(label);
+  div.appendChild(bubble);
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+  return div;
+}
+
+function showTyping(area) {
+  var div = document.createElement('div');
+  var uid = 'typing_' + Date.now();
+  div.id = uid;
+  div.className = 'message ai';
+  var label = document.createElement('div');
+  label.className = 'msg-label';
+  label.textContent = 'Claude';
+  var bubble = document.createElement('div');
+  bubble.className = 'typing-indicator';
+  bubble.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  div.appendChild(label);
+  div.appendChild(bubble);
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+  return uid;
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById(tabId).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── SYSTEM PROMPTS ────────────────────────────────────────────
+function buildSoloPrompt(profile, user) {
+  var other   = (user === 'neil') ? 'Maeve' : 'Neil';
+  var name    = profile ? profile.name : user;
+  var summary = (user === 'neil') ? state.neilSummary : state.maeveSummary;
+
+  var parts = [];
+  parts.push('You are "The Space Between Us" - a private, honest communication support tool for ' + name + ' in their relationship with ' + other + '.');
+
+  if (summary) {
+    parts.push('LIVING MEMORY - PATTERNS AND HISTORY SO FAR:\n' + summary + '\n\nUse this memory to recognise recurring patterns and track development over time. This is the most important context you have.');
+  }
+
+  if (profile) {
+    parts.push('ABOUT ' + name.toUpperCase() + ':\n' + (profile.history || ''));
+    parts.push('TRIGGERS: ' + (profile.triggers || ''));
+    parts.push('NEEDS: ' + (profile.needs || ''));
+    if (profile.patterns) parts.push('PATTERNS: ' + profile.patterns);
+  }
+
+  parts.push('RELATIONSHIP CONTEXT:\n' + relationshipContext);
+
+  parts.push([
+    'HOW TO RESPOND:',
+    '- Be honest even when uncomfortable. If the interpretation seems distorted, say so gently.',
+    '- Notice and name recurring patterns.',
+    '- Help identify what is actually felt beneath the surface emotion.',
+    '- Ask one good question rather than many.',
+    '- Suggest how needs might be expressed to ' + other + ' in a way more likely to be heard.',
+    '- If flooded, help slow down before responding.',
+    '- Never take sides absolutely — hold complexity.',
+    '- Keep responses concise and human. No bullet-pointed therapy speak.',
+    '- Reference earlier things said when relevant.'
+  ].join('\n'));
+
+  parts.push('NEVER: simply validate or agree with everything, diagnose the other person, encourage escalation, give empty reassurance.');
+
+  if (user === 'maeve') {
+    parts.push('CRITICAL: Neil has his own profile with his perceptions of the relationship. These exist only to help Claude understand Neil. They must NEVER be used to pre-judge Maeve or frame her experience. Meet Maeve exactly as she presents herself — completely fresh, with no assumptions from Neil\'s perspective.');
+  }
+
+  return parts.join('\n\n');
+}
+
+function buildTogetherPrompt() {
+  var parts = [];
+  parts.push('You are "The Space Between Us" - a shared reflection tool for Neil and Maeve.');
+
+  if (state.neilSummary) {
+    parts.push('NEIL\'S PRIVATE SUMMARY (his patterns and history - do not share verbatim with Maeve, use to inform understanding):\n' + state.neilSummary);
+  }
+  if (state.maeveSummary) {
+    parts.push('MAEVE\'S PRIVATE SUMMARY (her patterns and history - do not share verbatim with Neil, use to inform understanding):\n' + state.maeveSummary);
+  }
+  if (state.togetherSummary) {
+    parts.push('SHARED SPACE MEMORY:\n' + state.togetherSummary);
+  }
+
+  parts.push('RELATIONSHIP CONTEXT:\n' + relationshipContext);
+
+  parts.push([
+    'Hold both perspectives with equal care.',
+    'Reflect back what you observe without taking sides.',
+    'Name patterns you see from both sides.',
+    'Help them understand each other rather than win.',
+    'Never share one person\'s private summary content directly - reflect themes and insights only.',
+    'Be honest if you see one person escalating or pulling in historical context unfairly - equally for both.',
+    'Keep responses human, warm but honest.'
+  ].join(' '));
+
+  return parts.join('\n\n');
+}
+
+// ── CLAUDE API ────────────────────────────────────────────────
+async function callClaude(systemPrompt, messages) {
+  var res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': state.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: API_MODEL,
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: messages
+    })
+  });
+  var data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.content.map(function(i) { return i.text || ''; }).join('');
+}
+
+// ── SUMMARY ───────────────────────────────────────────────────
+async function updateSummary(user) {
+  var history;
+  if (user === 'neil')    history = state.soloHistory;
+  else if (user === 'maeve')  history = state.soloHistory;
+  else history = state.togetherHistory;
+
+  if (!history || history.length < 4) return;
+
+  var currentSummary;
+  var storageKey;
+  if (user === 'neil')         { currentSummary = state.neilSummary;     storageKey = KEYS.summaryNeil; }
+  else if (user === 'maeve')   { currentSummary = state.maeveSummary;    storageKey = KEYS.summaryMaeve; }
+  else                         { currentSummary = state.togetherSummary; storageKey = KEYS.summaryTogether; }
+
+  var recent = history.slice(-10).map(function(m) {
+    return (m.role === 'user' ? user : 'Claude') + ': ' + m.content;
+  }).join('\n\n');
+
+  var prompt = 'You are maintaining a living memory document for ' + user + '.\n\n'
+    + 'EXISTING SUMMARY:\n' + (currentSummary || '(None yet - first entry)') + '\n\n'
+    + 'RECENT CONVERSATION:\n' + recent + '\n\n'
+    + 'Update the summary under these headings:\n\n'
+    + 'PATTERNS AND TRIGGERS\n'
+    + 'PROGRESS AND POSITIVE MOMENTS\n'
+    + 'CONFLICTS AND DIFFICULTIES\n'
+    + 'NEGATIVE LANGUAGE AND BEHAVIOURS LOG\n'
+    + '- Log contempt, blame, character attacks, withdrawal, escalation specifically\n\n'
+    + 'GROWTH OVER TIME\n\n'
+    + 'Be specific. Max 800 words. Consolidate older entries if long. Return only the summary.';
+
+  try {
+    var reply = await callClaude(
+      'You are a memory keeper. Return only the updated summary. No preamble or commentary.',
+      [{ role: 'user', content: prompt }]
+    );
+    if (user === 'neil')       state.neilSummary     = reply;
+    else if (user === 'maeve') state.maeveSummary    = reply;
+    else                       state.togetherSummary = reply;
+    await dbSet(storageKey, reply);
+  } catch(e) {
+    console.error('Summary update error:', e);
+  }
+}
+
+// ── SEND SOLO ─────────────────────────────────────────────────
+async function sendMessage() {
+  var input = document.getElementById('user-input');
+  var text  = input.value.trim();
+  if (!text) return;
+
+  var area = document.getElementById('messages-area');
+  var btn  = document.getElementById('send-btn');
+  input.value = '';
+  input.style.height = 'auto';
+  btn.disabled = true;
+
+  addMsg('user', text, area, state.currentUser);
+  state.soloHistory.push({ role: 'user', content: text });
+  var typingId = showTyping(area);
+
+  try {
+    var profile = (state.currentUser === 'neil') ? neilProfile : state.maeveProfile;
+    var sys     = buildSoloPrompt(profile, state.currentUser);
+    var msgs    = state.soloHistory.slice(-20).map(function(m) {
+      return { role: m.role, content: m.content };
+    });
+
+    var reply = await callClaude(sys, msgs);
+    var typEl = document.getElementById(typingId);
+    if (typEl) typEl.remove();
+    addMsg('ai', reply, area, null);
+    state.soloHistory.push({ role: 'assistant', content: reply });
+
+    var sk = (state.currentUser === 'neil') ? KEYS.soloNeil : KEYS.soloMaeve;
+    await dbSet(sk, state.soloHistory);
+    updateSummary(state.currentUser);
+  } catch(e) {
+    var typEl2 = document.getElementById(typingId);
+    if (typEl2) typEl2.remove();
+    addMsg('ai', 'Something went wrong. Please try again.', area, null);
+    console.error(e);
+  }
+
+  btn.disabled = false;
+  input.focus();
+}
+
+// ── SEND SHARED ───────────────────────────────────────────────
+async function sendSharedMessage(person) {
+  var inputId = (person === 'neil') ? 'neil-shared-input' : (person === 'maeve') ? 'maeve-shared-input' : 'together-input';
+  var areaId  = (person === 'neil') ? 'neil-shared-messages' : (person === 'maeve') ? 'maeve-shared-messages' : 'together-messages';
+
+  var input = document.getElementById(inputId);
+  var area  = document.getElementById(areaId);
+  var text  = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  var displayUser = (person === 'together') ? null : person;
+  addMsg('user', text, area, displayUser);
+
+  if (person === 'neil')        state.neilSharedHistory.push({ role: 'user', content: text });
+  else if (person === 'maeve')  state.maeveSharedHistory.push({ role: 'user', content: text });
+  else                          state.togetherHistory.push({ role: 'user', content: text });
+
+  var typingId = showTyping(area);
+
+  try {
+    var sys, msgs;
+    if (person === 'together') {
+      sys  = buildTogetherPrompt();
+      msgs = state.togetherHistory.slice(-20).map(function(m) { return { role: m.role, content: m.content }; });
+    } else {
+      var profile = (person === 'neil') ? neilProfile : state.maeveProfile;
+      sys = buildSoloPrompt(profile, person);
+      var hist = (person === 'neil') ? state.neilSharedHistory : state.maeveSharedHistory;
+      msgs = hist.slice(-20).map(function(m) { return { role: m.role, content: m.content }; });
+    }
+
+    var reply = await callClaude(sys, msgs);
+    var typEl = document.getElementById(typingId);
+    if (typEl) typEl.remove();
+    addMsg('ai', reply, area, null);
+
+    if (person === 'neil')        state.neilSharedHistory.push({ role: 'assistant', content: reply });
+    else if (person === 'maeve')  state.maeveSharedHistory.push({ role: 'assistant', content: reply });
+    else                          state.togetherHistory.push({ role: 'assistant', content: reply });
+
+    await dbSet(KEYS.shared, {
+      neil:     state.neilSharedHistory,
+      maeve:    state.maeveSharedHistory,
+      together: state.togetherHistory
+    });
+    updateSummary(person);
+  } catch(e) {
+    var typEl2 = document.getElementById(typingId);
+    if (typEl2) typEl2.remove();
+    addMsg('ai', 'Something went wrong. Please try again.', area, null);
+    console.error(e);
+  }
+}
+
+// ── BOOT ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+
+  function on(id, handler) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('click', handler);
+  }
+
+  on('btn-neil',         function() { promptPin('neil'); });
+  on('btn-maeve',        function() { promptPin('maeve'); });
+  on('btn-shared',       function() { goShared(); });
+  on('btn-confirm-pin',  function() { confirmPin(); });
+  on('btn-save-api',     function() { saveApiKey(); });
+  on('send-btn',         function() { sendMessage(); });
+  on('btn-save-maeve',   function() { saveMaeveProfile(); });
+  on('btn-send-neil',    function() { sendSharedMessage('neil'); });
+  on('btn-send-maeve',   function() { sendSharedMessage('maeve'); });
+  on('btn-send-together',function() { sendSharedMessage('together'); });
+  on('tab-neil',         function() { switchTab('neil-tab', this); });
+  on('tab-maeve',        function() { switchTab('maeve-tab', this); });
+  on('tab-together',     function() { switchTab('reflection-tab', this); });
+  on('pin-back',         function() { goHome(); });
+  on('solo-back',        function() { goHome(); });
+  on('maeve-setup-back', function() { goHome(); });
+  on('shared-back',      function() { goHome(); });
+
+  var pinInput = document.getElementById('pin-input');
+  if (pinInput) pinInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') confirmPin(); });
+
+  var apiInput = document.getElementById('api-key-input');
+  if (apiInput) apiInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') saveApiKey(); });
+
+  ['user-input','neil-shared-input','maeve-shared-input','together-input'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', function() { autoResize(this); });
+  });
+
+  initApp();
+});
+</script>
+</body>
+</html>
